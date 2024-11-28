@@ -1,0 +1,50 @@
+{% extends 'user_management/base.html' %}
+{% block title %}Products{% endblock %}
+{% block content %}
+<div class="px-6 py-12 grid grid-cols-3 gap-4">
+    <div class="col-span-1 bg-gray-200 rounded-xl p-6 py-10">
+        <form method="get" action="{% url 'product:products' %}">
+            <input name="query" class="w-full py-4 px-6 border rounded-xl" type="text" value="{{ query }}"
+                placeholder="Search">
+
+            <button class="mt-2 py-4 px-8 text-lg bg-teal-500 text-white rounded-xl hover:bg-teal-400">Search</button>
+        </form>
+
+        <hr class="my-6">
+        <p class="font-semibold">Categories</p>
+        <ul>
+            {% for category in categories %}
+            <li class="py-2 px-2 rounded-xl {% if category.id == category_id %} bg-blue-300 {% endif %}">
+                <a href="{% url 'product:products' %}?query={{ query }}&category={{ category.id }}">{{ category.title }}</a>
+            </li>
+            {% endfor %}
+        </ul>
+
+        <hr class="my-6">
+        <p class="font-semibold">Clear Filters</p>
+        <ul>
+            <li><a href="{% url 'product:products' %}"
+                    class="mt-2 py-4 px-8 inline-block bg-yellow-500 text-lg rounded-xl text-white">Clear</a></li>
+        </ul>
+    </div>
+    
+    <div class="col-span-2 bg-slate-400 p-3 py-10 rounded-xl">
+        <h2 class="mb-12 text-3xl text-center font-semibold">Products</h2>
+        <div class="grid grid-cols-2 gap-3">
+            {% for product in products %}
+            <div class="m-3 opacity-90 hover:opacity-100 duration-500">
+                {% comment %} <a href="{% url 'product:detail' product.id %}"> {% endcomment %}
+                <div class="aspect-w-16 aspect-h-9">
+                    <img src="{{ product.image.url }}" alt="{{ product.title }}" class="object-cover w-full h-full rounded-t-xl">
+                </div>
+                <div class="p-6 bg-white rounded-b-xl hover:bg-gray-200">
+                    <h2 class="text-2xl font-bold">| {{ product.sale_price }} | {{ product.price }}</h2>
+                    <p><strong>Discount %:</strong> {{ product.discount_percentage }}</p>
+                </div>
+                {% comment %} </a> {% endcomment %}
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock %}
