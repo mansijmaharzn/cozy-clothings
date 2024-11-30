@@ -1,0 +1,40 @@
+{% extends 'user_management/base.html' %}
+{% block title %}Home{% endblock %}
+{% block content %}
+<div class="px-6 py-12 bg-slate-400">
+    <h2 class="mb-12 text-3xl text-center font-semibold">New Products</h2>
+
+    <div class="grid grid-cols-2 gap-3">
+        {% for product in products %}
+        <div class="m-3 opacity-90 hover:opacity-100 duration-500">
+            <a href="#">
+                <div class="aspect-w-16 aspect-h-9">
+                    <img src="{{ product.image.url }}" alt="{{ product.title }}"
+                        class="object-cover w-full h-full rounded-t-xl">
+                </div>
+                <div class="p-6 bg-white rounded-b-xl hover:bg-gray-200">
+                    <h2 class="text-2xl font-bold">| {{ product.sale_price }} | {{ product.title }}</h2>
+                </div>
+            </a>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<div class="mt-6 px-6 py-12 bg-gray-100 rounded-xl">
+    <h2 class="mb-12 text-3xl text-center font-semibold">Categories</h2>
+
+    <div class="grid grid-cols-3 gap-3">
+        {% for category in categories %}
+        <div>
+            <a href="{% url 'product:products' %}?category={{ category.id }}">
+                <div class="p-6 bg-white rounded-b-xl">
+                    <h2 class="text-2xl">{{ category.title }}</h2>
+                    <p class="text-gray-500">{{ category.products.count }} Products</p>
+                </div>
+            </a>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}
