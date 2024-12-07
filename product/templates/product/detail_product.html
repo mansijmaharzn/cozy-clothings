@@ -1,0 +1,48 @@
+{% extends 'user_management/base.html' %}
+{% block title %}{{ product.title }}{% endblock %}
+{% block content %}
+<div class="grid grid-cols-5 gap-6 m-6 p-6">
+    <div class="col-span-3 aspect-w-16 aspect-h-9 shadow-md hover:shadow-2xl duration-200 rounded-xl">
+        <img src="{{ product.image.url }}" alt="{{ product.title }}" class="object-cover w-full h-full rounded-xl">
+    </div>
+
+    <div class="col-span-2 p-6 bg-gray-100 rounded-xl shadow-md hover:shadow-2xl duration-200">
+        <h1 class="font-mono font-bold text-6xl text-center mb-6">{{ product.title }}</h1>
+        <p class="text-xl mb-2"><strong>Price:</strong> Rs. {{ product.price }}</p>
+        <p class="text-xl mb-2"><strong>Category:</strong> {{ product.category }}</p>
+        <p class="text-xl mb-2"><strong>Sale Price:</strong> Rs. {{ product.sale_price }}</p>
+        <p class="text-xl mb-2"><strong>Discount:</strong> {{ product.discount_percentage }}%</p>
+        <p class="text-xl mb-2"><strong>Stock:</strong> {{ product.quantity }}</p>
+
+        {% if product.description %}
+        <p class="test-gray-700 text-xl">
+            <strong class="text-gray500">Description:</strong>
+            <br />
+            {{ product.description }}
+        </p>
+        {% endif %}
+    </div>
+</div>
+
+
+{% if related_products %}
+<div class="m-10 px-10 py-12 bg-gray-100 rounded-xl">
+    <h2 class="mb-12 text-2xl text-center">Other Related Products</h2>
+
+    <div class="grid grid-cols-3 gap-3">
+        {% for product in related_products %}
+        <div>
+            <a href="{% url 'product:detail_product' product.id %}">
+                <div>
+                    <img src="{{ product.image.url }}" alt="{{ product.title }}" class="rounded-t-xl">
+                </div>
+                <div class="p-6 bg-white rounded-b-xl">
+                    <h2>{{ product.title }}</h2>
+                    <p class="text-gray-500">Price: {{ product.price }}</p>
+                </div>
+            </a>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+    {% endblock %}

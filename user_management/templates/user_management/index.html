@@ -7,7 +7,7 @@
     <div class="grid grid-cols-2 gap-3">
         {% for product in products %}
         <div class="m-3 opacity-90 hover:opacity-100 duration-500">
-            <a href="#">
+            <a href="{% url 'product:detail_product' product.id %}">
                 <div class="aspect-w-16 aspect-h-9">
                     <img src="{{ product.image.url }}" alt="{{ product.title }}"
                         class="object-cover w-full h-full rounded-t-xl">

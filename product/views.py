@@ -1,6 +1,7 @@
 from django.shortcuts import render
 from django.views import View
 from django.db.models import Q
+from django.shortcuts import get_object_or_404
 
 from product.models import Product, Category
 
@@ -33,5 +34,25 @@ class ProductView(View):
                 "categories": categories,
                 "query": query,
                 "category_id": int(category_id),
+            },
+        )
+
+
+class DetailProductView(View):
+    template_name = "product/detail_product.html"
+
+    def get(self, request, *args, **kwargs):
+        product_id = kwargs.get("product_id")
+        product = get_object_or_404(Product, id=product_id)
+        related_products = Product.objects.filter(category=product.category).exclude(
+            id=product_id
+        )[:3]
+
+        return render(
+            request,
+            self.template_name,
+            {
+                "product": product,
+                "related_products": related_products,
             },
         )
