@@ -71,7 +71,7 @@ class CartView(View):
             return JsonResponse(
                 {
                     "success": False,
-                    "error": f"Only {product.quantity} units available.",
+                    "error": f"Only {product.quantity} more units available.",
                 },
                 status=400,
             )
@@ -80,23 +80,7 @@ class CartView(View):
             user=request.user, product=product
         )
 
-        if created:
-            cart_item.quantity = quantity
-        else:
-            new_quantity = cart_item.quantity + quantity
-
-            # If the item is already in the cart, increment the quantity, otherwise set it to 1
-            if new_quantity > product.quantity:
-                return JsonResponse(
-                    {
-                        "success": False,
-                        "error": f"Only {product.quantity - cart_item.quantity} more units available.",
-                    },
-                    status=400,
-                )
-            else:
-                cart_item.quantity = new_quantity
-
+        cart_item.quantity = quantity
         cart_item.save()
 
         return JsonResponse(

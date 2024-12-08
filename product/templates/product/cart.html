@@ -43,16 +43,33 @@
                         {{ item.product.title }}
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        <div class="flex items-center">
-                            <input type="number" id="quantity_{{ item.id }}" value="{{ item.quantity }}" min="1"
-                                class="quantity-input w-16 border border-gray-300 rounded-md py-1 text-center">
+                        <div class="flex items-center space-x-2">
+                            <!-- Decrease Quantity Button -->
+                            <button type="button" id="quantity-minus"
+                                class="bg-red-500 text-white px-2 py-1 rounded hover:bg-red-600 text-xs"
+                                data-type="minus" data-id="{{ item.id }}">
+                                -
+                            </button>
+
+                            <!-- Quantity Input -->
+                            <input type="number" id="quantity_{{ item.id }}"
+                                class="quantity-input w-16 border border-gray-300 rounded-md py-1 text-center"
+                                data-product-id="{{ item.product.id }}" data-price="{{ item.product.price }}"
+                                value="{{ item.quantity }}" min="1" max="{{ item.product.quantity }}" />
+
+                            <!-- Increase Quantity Button -->
+                            <button type="button" id="quantity-plus"
+                                class="bg-green-500 text-white px-2 py-1 rounded hover:bg-green-600 text-xs"
+                                data-type="plus" data-id="{{ item.id }}">
+                                +
+                            </button>
                         </div>
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                         Rs. {{ item.product.price }}
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        Rs. {{ item.total_price }}
+                        Rs. <span id="total-price-{{ item.id }}">{{ item.total_price }}</span>
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                         <button class="text-red-600 hover:text-red-800 remove-item-btn"
@@ -66,7 +83,7 @@
 
     <div class="mt-8 flex justify-between items-center">
         <div class="text-xl font-semibold">
-            Total: ${{ total_price }}
+            Total: Rs. <span id="grand-total-price">{{ total_price }}</span>
         </div>
     </div>
     {% else %}

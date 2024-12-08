@@ -99,10 +99,10 @@
                 },
                 error: function (xhr, status, error) {
                     console.error("Error updating cart:", error);
-                    // const response = JSON.parse(xhr.responseText);
-                    // if (response.error) {
-                    //     alert(response.error);
-                    // }
+                    const response = JSON.parse(xhr.responseText);
+                    if (response.error) {
+                        alert(response.error);
+                    }
                 },
                 complete: function () {
                     // Enable button after loading
