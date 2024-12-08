@@ -71,7 +71,7 @@ class CartView(View):
             return JsonResponse(
                 {
                     "success": False,
-                    "error": f"Only {product.quantity} units available.",
+                    "error": f"Only {product.quantity} more units available.",
                 },
                 status=400,
             )
@@ -80,23 +80,7 @@ class CartView(View):
             user=request.user, product=product
         )
 
-        if created:
-            cart_item.quantity = quantity
-        else:
-            new_quantity = cart_item.quantity + quantity
-
-            # If the item is already in the cart, increment the quantity, otherwise set it to 1
-            if new_quantity > product.quantity:
-                return JsonResponse(
-                    {
-                        "success": False,
-                        "error": f"Only {product.quantity - cart_item.quantity} more units available.",
-                    },
-                    status=400,
-                )
-            else:
-                cart_item.quantity = new_quantity
-
+        cart_item.quantity = quantity
         cart_item.save()
 
         return JsonResponse(
@@ -125,4 +109,20 @@ class CartView(View):
         return JsonResponse(
             {"error": "Product not found in cart."},
             status=400,
+        )
+
+
+class UserCartView(View):
+    template_name = "product/cart.html"
+
+    def get(self, request, *args, **kwargs):
+        cart_items = Cart.objects.filter(user=request.user)
+
+        # Calculate the total price of the items in the cart
+        total_price = sum(item.total_price() for item in cart_items)
+
+        return render(
+            request,
+            self.template_name,
+            {"cart_items": cart_items, "total_price": total_price},
         )

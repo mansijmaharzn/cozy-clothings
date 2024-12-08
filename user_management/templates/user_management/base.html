@@ -6,6 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <script src="https://cdn.tailwindcss.com"></script>
   <title>{% block title %}{% endblock %} | Cozy Clothings</title>
+  {% block extra_css %}{% endblock %}
 </head>
 
 <body>
@@ -17,6 +18,8 @@
       <a href="{% url 'product:products' %}"
         class="px-6 py-3 text-lg font-semibold bg-violet-500 text-white rounded-xl hover:bg-violet-400">Browse</a>
       {% if user.is_authenticated %}
+      <a href="{% url 'product:user_cart' %}"
+        class="px-6 py-3 text-lg font-semibold bg-emerald-500 text-white rounded-xl hover:bg-teal-400">Cart</a>
       <a href="{% url 'user_management:logout' %}"
         class="px-6 py-3 text-lg font-semibold bg-red-500 text-white rounded-xl hover:bg-rose-400">Logout</a>
       {% else %}
