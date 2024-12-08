@@ -1,4 +1,5 @@
 {% extends 'user_management/base.html' %}
+{% load cart_extras %}
 {% block title %}{{ product.title }}{% endblock %}
 {% block content %}
 <div class="grid grid-cols-5 gap-6 m-6 p-6">
@@ -8,6 +9,7 @@
 
     <div class="col-span-2 p-6 bg-gray-100 rounded-xl shadow-md hover:shadow-2xl duration-200">
         <h1 class="font-mono font-bold text-6xl text-center mb-6">{{ product.title }}</h1>
+        <span id="product-price" data-price="{{ product.price }}"></span>
         <p class="text-xl mb-2"><strong>Price:</strong> Rs. {{ product.price }}</p>
         <p class="text-xl mb-2"><strong>Category:</strong> {{ product.category }}</p>
         <p class="text-xl mb-2"><strong>Sale Price:</strong> Rs. {{ product.sale_price }}</p>
@@ -21,6 +23,40 @@
             {{ product.description }}
         </p>
         {% endif %}
+
+        {% if user.is_authenticated and product.quantity > 0 %}
+        <div class="flex items-center space-x-2">
+            <!-- Decrease Quantity Button -->
+            <button type="button" id="quantity-minus" class="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600"
+                data-type="minus" data-field="">
+                -
+            </button>
+
+            <!-- Quantity Input -->
+            <input type="number" id="quantity" name="quantity"
+                class="w-16 text-center border border-gray-300 rounded focus:ring focus:ring-blue-500" value="1" min="1"
+                max="{{ product.quantity }}" />
+
+            <!-- Increase Quantity Button -->
+            <button type="button" id="quantity-plus"
+                class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600" data-type="plus" data-field="">
+                +
+            </button>
+        </div>
+
+        <button id="cartButton" class="w-full my-2 px-4 py-2 rounded text-white 
+         {% if product|cart_of:user %}bg-red-500 hover:bg-red-600{% else %}bg-blue-500 hover:bg-blue-600{% endif %} 
+         flex items-center justify-center" data-product-id="{{ product.id }}"
+            data-in-cart="{% if product|cart_of:user %}true{% else %}false{% endif %}">
+            <span class="mr-2" id="add-to-cart-btn-text">
+                {% if product|cart_of:user %} Remove from Cart {% else %} Add to Cart {% endif %}
+            </span>
+            <span class="hidden loader w-4 h-4 border-2 border-t-transparent border-white rounded-full animate-spin"
+                role="status"></span>
+        </button>
+
+        {% endif %}
+
     </div>
 </div>
 
@@ -45,4 +81,5 @@
         {% endfor %}
     </div>
     {% endif %}
+    {% include 'product/snippets/cart_functionalities.html' %}
     {% endblock %}

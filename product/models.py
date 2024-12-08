@@ -1,6 +1,7 @@
 from django.db import models
 from django.utils.text import slugify
 from django.utils.timezone import now
+from django.contrib.auth.models import User
 
 
 class Category(models.Model):
@@ -54,6 +55,9 @@ class Product(models.Model):
     def __str__(self):
         return self.title
 
+    def in_cart_of(self, user):
+        return self.cart_items.filter(user=user).exists()
+
     def save(self, *args, **kwargs):
         if not self.slug:
             self.slug = slugify(self.title)
@@ -68,3 +72,24 @@ class Product(models.Model):
 
     class Meta:
         ordering = ["-created_at"]
+
+
+class Cart(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="carts")
+    product = models.ForeignKey(
+        Product, on_delete=models.CASCADE, related_name="cart_items"
+    )
+    quantity = models.PositiveIntegerField(default=1)
+
+    def total_price(self):
+        return self.product.price * self.quantity
+
+    class Meta:
+        unique_together = (
+            "user",
+            "product",
+        )
+        ordering = ["-id"]
+
+    def __str__(self):
+        return f"{self.quantity} {self.product.title} ({self.product.id}) - {self.user.username}"
