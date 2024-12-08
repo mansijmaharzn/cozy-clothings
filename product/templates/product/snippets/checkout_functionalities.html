@@ -1,0 +1,53 @@
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+    function showMessage(message, type) {
+        const messageContainer = $("#message-container");
+        messageContainer
+            .removeClass("hidden")
+            .removeClass("message-success message-error")
+            .addClass(type === "success" ? "message-success" : "message-error")
+            .text(message);
+
+        // Auto-hide message after 3 seconds
+        setTimeout(() => {
+            messageContainer.addClass("hidden").text("");
+        }, 3000);
+    }
+
+    // function showMessage(message, type) {
+    //     const messageContainer = $("#message-container");
+
+    //     // Display the message with the correct styling
+    //     messageContainer
+    //         .removeClass("hidden")
+    //         .removeClass("message-success message-error")
+    //         .addClass(type === "success" ? "message-success" : "message-error")
+    //         .text(message);
+
+    //     // Auto-hide the message after 3 seconds
+    //     setTimeout(() => {
+    //         messageContainer.addClass("hidden").text("");
+    //     }, 3000);
+    // }
+
+    $(document).ready(function () {
+        $(".remove-item-btn").click(function () {
+            const productId = $(this).data("product-id");
+
+            $.ajax({
+                url: `/products/add-remove-from-cart/${productId}/`,
+                type: "DELETE",
+                headers: {
+                    "X-CSRFToken": "{{ csrf_token }}", // Ensure CSRF token is passed
+                },
+                success: function (response) {
+                    $(`#cart-item-${productId}`).remove();
+                    showMessage(response.message, "success");
+                },
+                error: function (xhr, status, error) {
+                    showMessage(`Failed to remove item: ${error}`, "error");
+                },
+            });
+        });
+    });
+</script>

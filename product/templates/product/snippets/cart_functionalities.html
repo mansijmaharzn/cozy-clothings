@@ -69,6 +69,11 @@
                 return;
             }
 
+            if (selectedQuantity < 1) {
+                alert("You must add at least 1 item to the cart.");
+                return;
+            }
+
             // Disable button while loading
             toggleLoadingState($(this), true);
 
@@ -93,7 +98,7 @@
                     updateCartButton($("#cartButton"), !isInCart);
                 },
                 error: function (xhr, status, error) {
-                    console.error("Error updating cart hehe:", error);
+                    console.error("Error updating cart:", error);
                     // const response = JSON.parse(xhr.responseText);
                     // if (response.error) {
                     //     alert(response.error);

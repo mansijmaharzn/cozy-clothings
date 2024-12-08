@@ -126,3 +126,19 @@ class CartView(View):
             {"error": "Product not found in cart."},
             status=400,
         )
+
+
+class UserCartView(View):
+    template_name = "product/cart.html"
+
+    def get(self, request, *args, **kwargs):
+        cart_items = Cart.objects.filter(user=request.user)
+
+        # Calculate the total price of the items in the cart
+        total_price = sum(item.total_price() for item in cart_items)
+
+        return render(
+            request,
+            self.template_name,
+            {"cart_items": cart_items, "total_price": total_price},
+        )
