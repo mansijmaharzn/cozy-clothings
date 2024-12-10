@@ -55,7 +55,7 @@
                             <input type="number" id="quantity_{{ item.id }}"
                                 class="quantity-input w-16 border border-gray-300 rounded-md py-1 text-center"
                                 data-product-id="{{ item.product.id }}" data-price="{{ item.product.price }}"
-                                value="{{ item.quantity }}" min="1" max="{{ item.product.quantity }}" />
+                                data-id="{{ item.id }}" value="{{ item.quantity }}" min="1" max="{{ item.product.quantity }}" />
 
                             <!-- Increase Quantity Button -->
                             <button type="button" id="quantity-plus"
@@ -84,6 +84,12 @@
     <div class="mt-8 flex justify-between items-center">
         <div class="text-xl font-semibold">
             Total: Rs. <span id="grand-total-price">{{ total_price }}</span>
+        </div>
+        <div>
+            <a href="#" 
+               class="bg-blue-500 text-white px-6 py-2 rounded hover:bg-blue-600">
+               Proceed to Checkout
+            </a>
         </div>
     </div>
     {% else %}
