@@ -34,7 +34,7 @@
         const totalPrice = pricePerItem * currentQuantity;
 
         // Update the total price element
-        $("#total-price-" + itemId).text(totalPrice.toFixed(2)); // Assuming there is an element with id total-price-<itemId> to show the total price
+        $("#total-price-" + itemId).text(totalPrice.toFixed(2));
 
         // Update the grand total
         updateGrandTotalPrice();
@@ -48,9 +48,8 @@
             let currentQuantity = parseInt(quantityInput.val());
 
             if ((currentQuantity - 1) >= 1) {
-                quantityInput.val(currentQuantity - 1);  // Decrease the quantity by 1
+                quantityInput.val(currentQuantity - 1);
                 quantityInput.change();
-                updateTotalPrice(itemId);
             }
         });
 
@@ -62,9 +61,8 @@
             const maxQuantity = parseInt(quantityInput.attr("max"));  // Get the max quantity from the input
 
             if ((currentQuantity + 1) <= maxQuantity) {
-                quantityInput.val(currentQuantity + 1);  // Increase the quantity by 1
+                quantityInput.val(currentQuantity + 1);
                 quantityInput.change();
-                updateTotalPrice(itemId);
             }
         });
 
@@ -88,6 +86,7 @@
         });
 
         $(".quantity-input").change(function () {
+            const itemId = $(this).data("id");
             const productId = $(this).data("product-id");
             const updatedQuantity = $(this).val();
             const maxQuantity = parseInt($(this).attr("max"));
@@ -101,6 +100,9 @@
                 alert("You must add at least 1 item to the cart.");
                 return;
             }
+
+            // Calculate and Update the price with selected quantity
+            updateTotalPrice(itemId);
 
             $.ajax({
                 url: `/products/add-remove-from-cart/${productId}/`,
