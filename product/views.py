@@ -5,6 +5,7 @@ from django.shortcuts import get_object_or_404
 from django.http import JsonResponse
 
 from product.models import Product, Category, Cart
+from product.forms import CheckoutForm
 
 
 class ProductView(View):
@@ -126,3 +127,48 @@ class UserCartView(View):
             self.template_name,
             {"cart_items": cart_items, "total_price": total_price},
         )
+
+
+class CheckoutView(View):
+    template_name = "product/checkout.html"
+    form_class = CheckoutForm
+
+    def get_cart_items(self, user):
+        # Fetch the user's cart items (adjust this to your actual data retrieval logic)
+        user_cart_items = Cart.objects.filter(user=user)
+        return [
+            {
+                "product": item.product.title,
+                "quantity": item.quantity,
+                "price": item.product.price,
+                "total_price": item.product.price * item.quantity,
+            }
+            for item in user_cart_items
+        ]
+
+    def get(self, request, *args, **kwargs):
+        user_cart_items = self.get_cart_items(request.user)
+        total_price = sum(item.get("total_price") for item in user_cart_items)
+
+        form = self.form_class()
+
+        return render(
+            request,
+            self.template_name,
+            {
+                "cart_items": user_cart_items,
+                "total_price": total_price,
+                "form": form,
+            },
+        )
+
+    def post(self, request, *args, **kwargs):
+        form = self.form_class(request.POST)
+
+        if form.is_valid():
+            address = form.cleaned_data.get("shipping_address")
+            payment_method = form.cleaned_data.get("payment_method")
+
+            print(address, payment_method)
+
+            return render(request, self.template_name)

@@ -101,9 +101,6 @@
                 return;
             }
 
-            // Calculate and Update the price with selected quantity
-            updateTotalPrice(itemId);
-
             $.ajax({
                 url: `/products/add-remove-from-cart/${productId}/`,
                 type: 'POST',
@@ -115,6 +112,8 @@
                 },
                 success: function (response) {
                     console.log("Quantity updated:", response.message);
+                    // Calculate and Update the price with selected quantity
+                    updateTotalPrice(itemId);
                 },
                 error: function (xhr, status, error) {
                     console.error("Error updating quantity:", error);
