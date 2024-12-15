@@ -243,7 +243,7 @@ class PaymentView(View):
             payment_method = form.cleaned_data.get("payment_method").lower()
 
             total_price, product_details = self._process_order_details(
-                order, user, payment_method
+                order, user, payment_method, address
             )
             if payment_method == "esewa":
                 pass  # TODO: implement esewa payment
@@ -255,9 +255,12 @@ class PaymentView(View):
         return redirect(payment_url)
 
     # custom methods to handle payments
-    def _process_order_details(self, order, user, payment):
+    def _process_order_details(self, order, user, payment, shipping_address):
         total_amount = 0
         product_details = []
+
+        order.shipping_address = shipping_address
+        order.save()
 
         order_items = OrderItem.objects.filter(order=order)
 
