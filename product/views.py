@@ -397,7 +397,8 @@ class PurchaseView(View):
         payments = PaymentHistory.objects.filter(transaction_id=transaction_id)
         for payment in payments:
             payment.transaction_status = "COMPLETE"
-            payment.transaction_response = response
+            payment.transaction_response = response.json()
+            payment.save()
 
     def _handle_khalti_lookup(self, pidx):
         url = settings.KHALTI_LOOKUP_URL
