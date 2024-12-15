@@ -86,17 +86,6 @@ class Cart(models.Model):
     def total_price(self):
         return self.product.price * self.quantity
 
-    def complete(self, amount):
-        self.quantity -= amount
-
-        if self.quantity < 0:
-            return False
-        elif self.quantity == 0:
-            self.delete()
-        else:
-            self.save()
-        return True
-
     class Meta:
         unique_together = (
             "user",

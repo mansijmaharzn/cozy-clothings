@@ -301,9 +301,9 @@ class PaymentView(View):
             "purchase_order_id": order.id,
             "purchase_order_name": f"Order #{order.id}",
             "customer_info": {
-                "name": order.user.username,
-                "email": order.user.email,
-                "phone": "9800000123",
+                "name": settings.KHALTI_CUSTOMER_NAME,
+                "email": settings.KHALTI_CUSTOMER_EMAIL,
+                "phone": settings.KHALTI_CUSTOMER_PHONE,
             },
             "amount_breakdown": [
                 {"label": "Mark Price", "amount": total_price},
@@ -391,13 +391,8 @@ class PurchaseView(View):
             product.quantity -= quantity
             product.save()
 
-            cart = Cart.objects.filter(user=user, product=product).first()
-
-            if cart:
-                cart.complete(quantity)
-
-            order.status = "Paid"
-            order.save()
+        order.status = "Paid"
+        order.save()
 
         payments = PaymentHistory.objects.filter(transaction_id=transaction_id)
         for payment in payments:
