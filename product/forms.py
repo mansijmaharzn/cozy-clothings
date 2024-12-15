@@ -1,7 +1,8 @@
 from django import forms
 
 
-class CheckoutForm(forms.Form):
+class PaymentForm(forms.Form):
+    order_id = forms.IntegerField(widget=forms.HiddenInput())
     shipping_address = forms.CharField(
         widget=forms.TextInput(attrs={"class": "w-full py-4 px-6 rounded-xl border"}),
         label="Shipping Address",

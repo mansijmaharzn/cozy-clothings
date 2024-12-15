@@ -36,7 +36,7 @@ LOGOUT_REDIRECT_URL = "/"
 # Application definition
 
 INSTALLED_APPS = [
-    'jazzmin',
+    "jazzmin",
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
@@ -129,6 +129,17 @@ STATICFILES_DIRS = [
 ]
 
 
+# payment gateway configurations
+TRANSACTION_REDIRECT_URL = os.getenv("TRANSACTION_REDIRECT_URL")
+WEBSITE_URL = os.getenv("WEBSITE_URL")
+
+# khalti configurations
+KHALTI_MERCHANT_USERNAME = os.getenv("KHALTI_MERCHANT_USERNAME")
+KHALTI_AUTH = os.getenv("KHALTI_AUTH")
+KHALTI_URL = os.getenv("KHALTI_URL")
+KHALTI_LOOKUP_URL = os.getenv("KHALTI_LOOKUP_URL")
+
+
 MEDIA_URL = "/media/"
 MEDIA_ROOT = os.path.join(BASE_DIR, "media")
 
@@ -144,8 +155,8 @@ JAZZMIN_SETTINGS = {
     "site_brand": "Cozy Clothings",
     "site_logo": "site_logo/logo.jpg",
     "site_logo_classes": "custom-logo",
-    "css": ["css/admin.css"], 
-    "show_ui_builder" : True,
+    "css": ["css/admin.css"],
+    "show_ui_builder": True,
 }
 
 JAZZMIN_UI_TWEAKS = {
@@ -176,6 +187,6 @@ JAZZMIN_UI_TWEAKS = {
         "info": "btn-info",
         "warning": "btn-warning",
         "danger": "btn-danger",
-        "success": "btn-success"
-    }
+        "success": "btn-success",
+    },
 }

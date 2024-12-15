@@ -6,6 +6,11 @@ from product.views import (
     CartView,
     UserCartView,
     CheckoutView,
+    CreateOrderView,
+    OrderView,
+    DetailOrderView,
+    PaymentView,
+    PurchaseView,
 )
 
 app_name = "product"
@@ -28,4 +33,13 @@ urlpatterns = [
         CheckoutView.as_view(),
         name="checkout",
     ),
+    path("create-order/", CreateOrderView.as_view(), name="create_order"),
+    path("orders/", OrderView.as_view(), name="orders"),
+    path("order/<int:order_id>/", DetailOrderView.as_view(), name="order_detail"),
+    path(
+        "payment/<int:order_id>/",
+        PaymentView.as_view(),
+        name="payment",
+    ),
+    path("purchase/", PurchaseView.as_view(), name="purchase"),
 ]

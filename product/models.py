@@ -3,6 +3,8 @@ from django.utils.text import slugify
 from django.utils.timezone import now
 from django.contrib.auth.models import User
 
+from cozy_clothings.enums import TransactionStatus, TransactionType
+
 
 class Category(models.Model):
     title = models.CharField(max_length=255, unique=True)
@@ -84,6 +86,17 @@ class Cart(models.Model):
     def total_price(self):
         return self.product.price * self.quantity
 
+    def complete(self, amount):
+        self.quantity -= amount
+
+        if self.quantity < 0:
+            return False
+        elif self.quantity == 0:
+            self.delete()
+        else:
+            self.save()
+        return True
+
     class Meta:
         unique_together = (
             "user",
@@ -93,3 +106,55 @@ class Cart(models.Model):
 
     def __str__(self):
         return f"{self.quantity} {self.product.title} ({self.product.id}) - {self.user.username}"
+
+
+class Order(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    status = models.CharField(
+        max_length=20,
+        choices=[
+            ("Pending", "Pending"),
+            ("Paid", "Paid"),
+            ("Shipped", "Shipped"),
+            ("Delivered", "Delivered"),
+        ],
+        default="Pending",
+    )
+    total_price = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    shipping_address = models.TextField(blank=True, null=True)
+    payment_method = models.TextField(blank=True, null=True)
+    created_at = models.DateTimeField(default=now)
+
+    def __str__(self):
+        return f"Order {self.id} by {self.user.username}"
+
+
+class OrderItem(models.Model):
+    order = models.ForeignKey(Order, related_name="items", on_delete=models.CASCADE)
+    product = models.ForeignKey(Product, on_delete=models.CASCADE)
+    quantity = models.PositiveIntegerField()
+    price = models.DecimalField(max_digits=10, decimal_places=2)
+
+    def total_price(self):
+        return self.price * self.quantity
+
+    def __str__(self):
+        return f"{self.quantity} x {self.product.title}"
+
+
+class PaymentHistory(models.Model):
+    order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name="payment")
+    buyer = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name="buyer_payment_histories"
+    )
+    amount = models.DecimalField(max_digits=8, decimal_places=2)
+    transaction_id = models.TextField()
+    transaction_response = models.JSONField(null=True)
+    transaction_status = models.CharField(
+        choices=TransactionStatus.choices, max_length=20
+    )
+    transaction_type = models.CharField(choices=TransactionType.choices, max_length=20)
+    created_at = models.DateTimeField(default=now)
+
+    def __str__(self):
+        return f"#{self.order.id} {self.transaction_type} ({self.transaction_status}) {self.buyer.id}"
