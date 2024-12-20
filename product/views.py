@@ -395,6 +395,7 @@ class PurchaseView(View):
             product.save()
 
         order.status = "Paid"
+        order.payment_method = payment.transaction_type
         order.save()
 
         payments = PaymentHistory.objects.filter(transaction_id=transaction_id)
