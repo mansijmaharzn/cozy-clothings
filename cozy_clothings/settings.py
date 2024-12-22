@@ -142,6 +142,10 @@ KHALTI_AUTH = os.getenv("KHALTI_AUTH")
 KHALTI_URL = os.getenv("KHALTI_URL")
 KHALTI_LOOKUP_URL = os.getenv("KHALTI_LOOKUP_URL")
 
+# esewa configurations
+ESEWA_SECRET_KEY = os.getenv("ESEWA_SECRET_KEY")
+ESEWA_LOOKUP_URL = os.getenv("ESEWA_LOOKUP_URL")
+
 
 MEDIA_URL = "/media/"
 MEDIA_ROOT = os.path.join(BASE_DIR, "media")
