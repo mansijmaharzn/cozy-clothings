@@ -7,6 +7,10 @@ from django.conf import settings
 from django.http import HttpResponseRedirect
 import requests
 import json
+import uuid
+import hmac
+import hashlib
+import base64
 
 from product.models import Product, Category, Cart, Order, OrderItem, PaymentHistory
 from product.forms import PaymentForm
@@ -246,13 +250,22 @@ class PaymentView(View):
                 order, user, payment_method, address
             )
             if payment_method == "esewa":
-                pass  # TODO: implement esewa payment
+                return self._handle_esewa_payment(request, order, total_price)
             elif payment_method == "khalti":
                 payment_url = self._handle_khalti_payment(
                     order, total_price, product_details
                 )
-
-        return redirect(payment_url)
+                return redirect(payment_url)
+        else:
+            return render(
+                request,
+                self.template_name,
+                {
+                    "order": order,
+                    "total_price": order.total_price,
+                    "form": form,
+                },
+            )
 
     # custom methods to handle payments
     def _process_order_details(self, order, user, payment, shipping_address):
@@ -337,6 +350,49 @@ class PaymentView(View):
 
         return data.get("payment_url")
 
+    def _generate_esewa_signature(self, fields_dict, signed_field_names, secret_key):
+        fields_to_sign = signed_field_names.split(",")
+        values = []
+        for field in fields_to_sign:
+            value = fields_dict[field]
+            values.append(f"{field}={value}")
+
+        input_string = ",".join(values)
+        signature = hmac.new(
+            secret_key.encode("utf-8"), input_string.encode("utf-8"), hashlib.sha256
+        )
+        return base64.b64encode(signature.digest()).decode("utf-8")
+
+    def _handle_esewa_payment(self, request, order, total_price):
+        transaction_uuid = str(uuid.uuid4())
+
+        esewa_fields = {
+            "amount": str(total_price),
+            "tax_amount": "0",
+            "total_amount": str(total_price),
+            "transaction_uuid": transaction_uuid,
+            "product_code": "EPAYTEST",
+            "product_service_charge": "0",
+            "product_delivery_charge": "0",
+            "success_url": f"{settings.TRANSACTION_REDIRECT_URL}",
+            "failure_url": f"{settings.WEBSITE_URL}",
+            "signed_field_names": "total_amount,transaction_uuid,product_code",
+        }
+
+        signature = self._generate_esewa_signature(
+            esewa_fields, esewa_fields["signed_field_names"], settings.ESEWA_SECRET_KEY
+        )
+
+        esewa_fields["signature"] = signature
+
+        PaymentHistory.objects.filter(order=order).update(
+            transaction_id=transaction_uuid
+        )
+
+        return render(
+            request, "product/esewa_checkout.html", {"esewa_fields": esewa_fields}
+        )
+
 
 class PurchaseView(View):
     template_name = "product/products.html"
@@ -412,3 +468,7 @@ class PurchaseView(View):
             "Content-Type": "application/json",
         }
         return requests.post(url, headers=headers, data=payload)
+
+    def _handle_esewa_lookup(self, product_code, total_amount, transaction_uuid):
+        url = f"{settings.ESEWA_LOOKUP_URL}?product_code={product_code}&total_amount={total_amount.replace(',', '')}&transaction_uuid={transaction_uuid}"
+        return requests.get(url)
