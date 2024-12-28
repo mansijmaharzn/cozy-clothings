@@ -1,0 +1,88 @@
+{% extends 'user_management/base.html' %}
+{% block title %}Auction{% endblock %}
+{% block content %}
+<div class="container mx-auto py-8">
+    <div class="bg-white shadow-md rounded-lg p-6">
+        <h1 class="text-2xl font-bold mb-4">Auction: {{ auction.product.name }}</h1>
+
+        <img src="{{ auction.product.image.url }}" alt="{{ auction.product.name }}"
+            class="w-64 h-64 object-cover rounded-lg mx-auto mb-4">
+
+        <!-- Auction Details -->
+        <p class="text-lg">Starting Price: <span class="font-bold">Rs. {{ auction.starting_price }}</span></p>
+        <p class="text-lg">
+            Current Price: <span class="font-bold" id="current-price">Rs. {{ auction.current_price}}</span>
+        </p>
+        <p class="text-lg">Auction Ends At: <span class="font-bold">{{ auction.end_time }}</span></p>
+
+        <!-- Bids Section -->
+        <h2 class="text-xl font-semibold mt-6">Bids</h2>
+        <ul id="bids-list" class="list-disc list-inside">
+            {% for bid in bids %}
+            <li>
+                <span class="font-semibold">{{ bid.user.username }}</span> bid
+                <span class="text-green-600 font-bold">Rs. {{ bid.amount }}</span> at {{ bid.timestamp }}
+            </li>
+            {% empty %}
+            <li class="text-gray-500 italic">No bids yet.</li>
+            {% endfor %}
+        </ul>
+
+        <!-- Bid Form -->
+        {% if user.is_authenticated %}
+        <form id="bid-form" method="POST" class="mt-6">
+            {% csrf_token %}
+            <label for="amount" class="block font-medium text-gray-700">Place a Bid:</label>
+            <input id="bid-amount" type="number" name="amount" step="0.01" required
+                class="mt-2 block w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring focus:ring-blue-300 focus:outline-none">
+            <button type="submit" class="mt-4 bg-blue-500 text-white py-2 px-6 rounded-lg shadow-md hover:bg-blue-600">
+                Submit Bid
+            </button>
+        </form>
+        {% else %}
+        <p class="text-red-500 mt-4"><a href="{% url 'user_management:login' %}" class="underline">Log in</a> to place a
+            bid.</p>
+        {% endif %}
+    </div>
+</div>
+
+<script>
+    // Initialize WebSocket connection
+    const auctionId = "{{ auction.id }}";
+    const socket = new WebSocket(`ws://${window.location.host}/ws/auction/${auctionId}/`);
+
+    socket.onmessage = function (event) {
+        const data = JSON.parse(event.data);
+
+        // Handle the new bid data or error
+        if (data.error) {
+            alert(data.error);
+        } else {
+            const bidsList = document.querySelector('#bids-list');
+            const newBid = document.createElement('li');
+            const newCurrentPrice = parseFloat(data.amount).toFixed(2);
+
+            newBid.innerHTML = `<span class="font-semibold">${data.user}</span> bid <span class="text-green-600 font-bold">Rs. ${newCurrentPrice}</span> at ${data.timestamp}`;
+            bidsList.prepend(newBid); // Prepend the new bid to the list
+
+            // Update current price on the page
+            document.querySelector('#current-price').textContent = `Rs. ${newCurrentPrice}`;
+        }
+    };
+
+    // Handle form submission for placing a bid
+    document.querySelector('#bid-form').addEventListener('submit', function (event) {
+        event.preventDefault(); // Prevent the default form submission
+
+        const bidAmount = document.querySelector('#bid-amount').value;
+        if (parseFloat(bidAmount) > 0) {
+            // Send the bid amount to the WebSocket server
+            socket.send(JSON.stringify({ 'amount': bidAmount }));
+            document.querySelector('#bid-amount').value = ''; // Clear the input field
+        } else {
+            alert('Please enter a valid bid amount.');
+        }
+    });
+</script>
+
+{% endblock %}

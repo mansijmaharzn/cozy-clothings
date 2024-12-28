@@ -37,6 +37,7 @@ LOGOUT_REDIRECT_URL = "/"
 
 INSTALLED_APPS = [
     "jazzmin",
+    "channels",
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
@@ -45,6 +46,7 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "user_management",
     "product",
+    "auction",
 ]
 
 MIDDLEWARE = [
@@ -75,7 +77,14 @@ TEMPLATES = [
     },
 ]
 
+ASGI_APPLICATION = "cozy_clothings.asgi.application"
 WSGI_APPLICATION = "cozy_clothings.wsgi.application"
+
+CHANNEL_LAYERS = {
+    "default": {
+        "BACKEND": "channels.layers.InMemoryChannelLayer",
+    },
+}
 
 
 # Database
