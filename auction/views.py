@@ -22,5 +22,14 @@ class AuctionDetailView(View):
 
         auction = get_object_or_404(Auction, id=auction_id)
         bids = auction.bids.all()
+        auction_status = "ongoing" if auction.end_time > timezone.now() else "ended"
 
-        return render(request, self.template_name, {"auction": auction, "bids": bids})
+        return render(
+            request,
+            self.template_name,
+            {
+                "auction": auction,
+                "bids": bids,
+                "auction_status": auction_status,
+            },
+        )

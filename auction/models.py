@@ -15,6 +15,13 @@ class Auction(models.Model):
     )
     start_time = models.DateTimeField()
     end_time = models.DateTimeField()
+    winner = models.ForeignKey(
+        User,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="won_auctions",
+    )
 
     def __str__(self):
         return f"Auction for {self.product.title}"

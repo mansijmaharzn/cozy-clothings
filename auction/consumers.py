@@ -80,3 +80,17 @@ class AuctionConsumer(AsyncWebsocketConsumer):
                 }
             )
         )
+
+    async def end_auction(self, event):
+        message = event["message"]
+
+        # Send the auction end data to the WebSocket
+        await self.send(
+            text_data=json.dumps(
+                {
+                    "type": "auction_end",
+                    "winner": message["winner"],
+                    "winning_bid": message["winning_bid"],
+                }
+            )
+        )
