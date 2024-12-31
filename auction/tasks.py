@@ -31,8 +31,3 @@ def end_auction():
                 },
             },
         )
-
-
-# celery -A cozy_clothings worker --loglevel=info
-# celery -A cozy_clothings beat --loglevel=info
-# celery -A cozy_clothings flower
