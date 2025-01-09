@@ -1,0 +1,28 @@
+{% extends 'user_management/base.html' %}
+{% block title %}Ongoing Auctions{% endblock %}
+
+{% block content %}
+<div class="container mx-auto py-8">
+    <h1 class="text-2xl font-bold mb-6">Ongoing Auctions</h1>
+    {% if auctions %}
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        {% for auction in auctions %}
+        <div class="bg-white shadow-md rounded-lg p-6">
+            <h2 class="text-xl font-semibold">{{ auction.product.title }}</h2>
+            <img src="{{ auction.product.image.url }}" alt="{{ auction.product.name }}"
+                class="w-64 h-64 object-cover rounded-lg mx-auto mb-4">
+            <p class="text-lg">Starting Price: <span class="font-bold">Rs. {{ auction.starting_price }}</span></p>
+            <p class="text-lg">Current Price: <span class="font-bold">Rs. {{ auction.current_price }}</span></p>
+            <p class="text-sm">Auction Ends At: <span class="font-bold">{{ auction.end_time }}</span></p>
+            <a href="{% url 'auction:auction_detail' auction.id %}"
+                class="mt-4 inline-block bg-blue-500 text-white py-2 px-6 rounded-lg shadow-md hover:bg-blue-600">
+                View Auction
+            </a>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <p class="text-gray-500 text-center text-2xl">No ongoing auctions at the moment! Check again later.</p>
+    {% endif %}
+</div>
+{% endblock %}

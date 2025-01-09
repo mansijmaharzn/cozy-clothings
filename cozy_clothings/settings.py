@@ -14,6 +14,9 @@ import os
 
 from pathlib import Path
 
+from celery.schedules import crontab
+
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -37,14 +40,18 @@ LOGOUT_REDIRECT_URL = "/"
 
 INSTALLED_APPS = [
     "jazzmin",
+    "channels",
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    "django_celery_beat",
     "user_management",
     "product",
+    "auction",
+    "chat",
 ]
 
 MIDDLEWARE = [
@@ -75,6 +82,7 @@ TEMPLATES = [
     },
 ]
 
+ASGI_APPLICATION = "cozy_clothings.asgi.application"
 WSGI_APPLICATION = "cozy_clothings.wsgi.application"
 
 
@@ -113,11 +121,33 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = "en-us"
 
-TIME_ZONE = "UTC"
+TIME_ZONE = "Asia/Kathmandu"
 
 USE_I18N = True
 
 USE_TZ = True
+
+
+CELERY_BROKER_URL = "redis://localhost:6379/0"
+CELERY_RESULT_BACKEND = "redis://localhost:6379/0"
+CELERY_ACCEPT_CONTENT = ["json"]
+CELERY_TASK_SERIALIZER = "json"
+CELERY_TIMEZONE = TIME_ZONE
+CELERY_TASK_REJECT_ON_WORKER_LOST = True
+CELERY_TASK_TRACK_STARTED = True
+CELERY_ACKS_LATE = True
+CELERY_WORKER_SEND_TASK_EVENTS = True
+CELERY_TASK_SEND_SENT_EVENT = True
+
+
+CHANNEL_LAYERS = {
+    "default": {
+        "BACKEND": "channels_redis.core.RedisChannelLayer",
+        "CONFIG": {
+            "hosts": ["redis://localhost:6379/0"],
+        },
+    },
+}
 
 
 # Static files (CSS, JavaScript, Images)
@@ -195,5 +225,14 @@ JAZZMIN_UI_TWEAKS = {
         "warning": "btn-warning",
         "danger": "btn-danger",
         "success": "btn-success",
+    },
+}
+
+
+# Celery Beat Schedules
+CELERY_BEAT_SCHEDULE = {
+    "end-auction-task": {
+        "task": "auction.tasks.end_auction",  # Path to the task
+        "schedule": crontab(minute="*", hour="*"),  # Runs every minute
     },
 }

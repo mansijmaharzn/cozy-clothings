@@ -47,12 +47,30 @@ pip install -r requirements.txt
 python manage.py migrate
 ```
 
-### 5. Run the Development Server
+### 5. Run Celery
+
+```bash
+celery -A cozy_clothings worker --loglevel=info
+```
+
+### 6, Run Celert Beat
+
+```bash
+celery -A cozy_clothings beat --loglevel=info
+```
+
+### 7. Run Flower (Optional)
+
+```bash
+celery -A cozy_clothings flower
+```
+
+### 8. Run the Development Server
 
 ```bash
 python manage.py runserver
 ```
 
-### 6. Access the Application
+### 9. Access the Application
 Open your browser and visit: http://127.0.0.1:8000/
 ---
