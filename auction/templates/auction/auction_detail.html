@@ -14,9 +14,11 @@
             Current Price: <span class="font-bold" id="current-price">Rs. {{ auction.current_price}}</span>
         </p>
         <p class="text-lg">Auction Ends At: <span class="font-bold">{{ auction.end_time }}</span></p>
+
         <!-- Auction Status -->
+        <div id="status-indicator" class="w-4 h-4 rounded-full"></div>
         <div id="auction-status" class="mt-4 text-xl font-semibold 
-            {% if auction_status == 'ongoing' %} text-green-600 {% else %} text-red-600 {% endif %}">
+        {% if auction_status == 'ongoing' %} text-green-600 {% else %} text-red-600 {% endif %}">
             {% if auction_status == 'ongoing' %}
             Auction is ongoing
             {% else %}
@@ -25,6 +27,24 @@
             Winning Bid: Rs. {{ auction.current_price|default:"N/A" }}
             {% endif %}
         </div>
+
+        <!-- Bid Form -->
+        {% if user.is_authenticated %}
+        {% if auction_status == 'ongoing' %}
+        <form id="bid-form" method="POST" class="mt-6">
+            {% csrf_token %}
+            <label for="amount" class="block font-medium text-gray-700">Place a Bid:</label>
+            <input id="bid-amount" type="number" name="amount" step="0.01" required
+                class="mt-2 block w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring focus:ring-blue-300 focus:outline-none">
+            <button type="submit" class="mt-4 bg-blue-500 text-white py-2 px-6 rounded-lg shadow-md hover:bg-blue-600">
+                Submit Bid
+            </button>
+        </form>
+        {% endif %}
+        {% else %}
+        <p class="text-red-500 mt-4"><a href="{% url 'user_management:login' %}" class="underline">Log in</a> to place a
+            bid.</p>
+        {% endif %}
 
         <!-- Bids Section -->
         <h2 class="text-xl font-semibold mt-6">Bids</h2>
@@ -39,21 +59,25 @@
             {% endfor %}
         </ul>
 
-        <!-- Bid Form -->
-        {% if user.is_authenticated %}
-        <form id="bid-form" method="POST" class="mt-6">
-            {% csrf_token %}
-            <label for="amount" class="block font-medium text-gray-700">Place a Bid:</label>
-            <input id="bid-amount" type="number" name="amount" step="0.01" required
-                class="mt-2 block w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring focus:ring-blue-300 focus:outline-none">
-            <button type="submit" class="mt-4 bg-blue-500 text-white py-2 px-6 rounded-lg shadow-md hover:bg-blue-600">
-                Submit Bid
-            </button>
-        </form>
-        {% else %}
-        <p class="text-red-500 mt-4"><a href="{% url 'user_management:login' %}" class="underline">Log in</a> to place a
-            bid.</p>
-        {% endif %}
+        <!-- Chatbox Section -->
+        <div class="col-span-1 bg-gray-100 shadow-md rounded-lg p-6">
+            <h2 class="text-xl font-semibold mb-4">Live Chat</h2>
+            <div id="chat-messages" class="overflow-y-auto h-64 mb-4 p-2 bg-white rounded-lg shadow-inner">
+                <!-- Chat messages will be appended here -->
+            </div>
+            {% if user.is_authenticated %}
+            <form id="chat-form">
+                {% csrf_token %}
+                <input id="chat-message" type="text" placeholder="Type your message..." required
+                    class="w-full px-4 py-2 border rounded-lg shadow-sm focus:ring focus:ring-blue-300 focus:outline-none">
+                <button type="submit" class="mt-2 w-full bg-blue-500 text-white py-2 px-6 rounded-lg hover:bg-blue-600">
+                    Send
+                </button>
+            </form>
+            {% else %}
+            <p class="text-red-500"><a href="{% url 'user_management:login' %}" class="underline">Log in</a> to join the chat.</p>
+            {% endif %}
+        </div>
     </div>
 </div>
 
@@ -61,6 +85,25 @@
     // Initialize WebSocket connection
     const auctionId = "{{ auction.id }}";
     const socket = new WebSocket(`ws://${window.location.host}/ws/auction/${auctionId}/`);
+
+    const statusIndicator = document.querySelector('#status-indicator');
+
+    function updateStatusIndicator(color, animationClass) {
+        statusIndicator.style.width = "20px";
+        statusIndicator.style.height = "20px";
+        statusIndicator.style.margin = "0 auto";
+        statusIndicator.style.borderRadius = "50%";
+        statusIndicator.style.backgroundColor = color;
+        statusIndicator.className = animationClass;
+    }
+
+    socket.onopen = function () {
+        if ("{{ auction_status }}" === "ongoing") {
+            updateStatusIndicator('green', 'glow-green');
+        } else {
+            updateStatusIndicator('red', 'glow-red');
+        }
+    };
 
     socket.onmessage = function (event) {
         const data = JSON.parse(event.data);
@@ -74,6 +117,9 @@
             auctionStatus.innerHTML = `Auction Ended!<br>Winner: ${data.winner || 'No winner'}<br>Winning Bid: Rs. ${data.winning_bid || 'N/A'}`;
             auctionStatus.classList.remove("text-green-600");
             auctionStatus.classList.add("text-red-600");
+            
+            // Set red glow button
+            updateStatusIndicator('red', 'glow-red');
 
             // Disable the bidding form
             const bidForm = document.querySelector('#bid-form');
@@ -99,6 +145,10 @@
         }
     };
 
+    socket.onclose = function () {
+        updateStatusIndicator('gray', 'WebSocket Connection Lost', '');
+    };
+
     // Handle form submission for placing a bid
     document.querySelector('#bid-form').addEventListener('submit', function (event) {
         event.preventDefault(); // Prevent the default form submission
@@ -113,5 +163,64 @@
         }
     });
 </script>
+<script>
+    const chatSocket = new WebSocket(`ws://${window.location.host}/ws/auction/{{ auction.id }}/chat/`);
+
+    chatSocket.onmessage = function(e) {
+        const data = JSON.parse(e.data);
+        const chatMessages = document.getElementById('chat-messages');
+        const messageElement = document.createElement('div');
+        messageElement.innerHTML = `<strong>${data.username}:</strong> ${data.message}`;
+        chatMessages.appendChild(messageElement);
+
+        // Scroll to the bottom
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+    };
+
+    chatSocket.onclose = function(e) {
+        console.error('Chat socket closed unexpectedly');
+    };
+
+    document.getElementById('chat-form').onsubmit = function(e) {
+        e.preventDefault();
+        const messageInput = document.getElementById('chat-message');
+        const message = messageInput.value;
+
+        chatSocket.send(JSON.stringify({
+            'message': message,
+        }));
+
+        messageInput.value = '';
+    };
+</script>
+
+<style>
+    .glow-green {
+        animation: glowGreen 1s infinite alternate;
+    }
+
+    .glow-red {
+        animation: glowRed 1s infinite alternate;
+    }
+
+    @keyframes glowGreen {
+        0% { box-shadow: 0 0 5px green; }
+        100% { box-shadow: 0 0 20px green; }
+    }
+
+    @keyframes glowRed {
+        0% { box-shadow: 0 0 5px red; }
+        100% { box-shadow: 0 0 20px red; }
+    }
+
+    #chat-messages {
+        max-height: 300px;
+        overflow-y: scroll;
+        border: 1px solid #ddd;
+        padding: 10px;
+        background-color: #f9f9f9;
+    }
+    
+</style>
 
 {% endblock %}

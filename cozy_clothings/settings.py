@@ -51,6 +51,7 @@ INSTALLED_APPS = [
     "user_management",
     "product",
     "auction",
+    "chat",
 ]
 
 MIDDLEWARE = [
