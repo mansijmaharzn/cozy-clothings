@@ -46,153 +46,45 @@
             bid.</p>
         {% endif %}
 
-        <!-- Bids Section -->
-        <h2 class="text-xl font-semibold mt-6">Bids</h2>
-        <ul id="bids-list" class="list-disc list-inside">
-            {% for bid in bids %}
-            <li>
-                <span class="font-semibold">{{ bid.user.username }}</span> bid
-                <span class="text-green-600 font-bold">Rs. {{ bid.amount }}</span> at {{ bid.timestamp }}
-            </li>
-            {% empty %}
-            <li id="no-bids-message" class="text-gray-500 italic">No bids yet.</li>
-            {% endfor %}
-        </ul>
-
-        <!-- Chatbox Section -->
-        <div class="col-span-1 bg-gray-100 shadow-md rounded-lg p-6">
-            <h2 class="text-xl font-semibold mb-4">Live Chat</h2>
-            <div id="chat-messages" class="overflow-y-auto h-64 mb-4 p-2 bg-white rounded-lg shadow-inner">
-                <!-- Chat messages will be appended here -->
+        <!-- Bids and Live Chat Section -->
+        <div class="flex flex-col md:flex-row gap-4 mt-6">
+            <!-- Bids Section -->
+            <div class="w-full md:w-1/2 bg-gray-100 shadow-md rounded-lg p-6">
+                <h2 class="text-xl font-semibold">Bids</h2>
+                <ul id="bids-list" class="list-disc list-inside">
+                    {% for bid in bids %}
+                    <li>
+                        <span class="font-semibold">{{ bid.user.username }}</span> bid
+                        <span class="text-green-600 font-bold">Rs. {{ bid.amount }}</span> at {{ bid.timestamp }}
+                    </li>
+                    {% empty %}
+                    <li id="no-bids-message" class="text-gray-500 italic">No bids yet.</li>
+                    {% endfor %}
+                </ul>
             </div>
-            {% if user.is_authenticated %}
-            <form id="chat-form">
-                {% csrf_token %}
-                <input id="chat-message" type="text" placeholder="Type your message..." required
-                    class="w-full px-4 py-2 border rounded-lg shadow-sm focus:ring focus:ring-blue-300 focus:outline-none">
-                <button type="submit" class="mt-2 w-full bg-blue-500 text-white py-2 px-6 rounded-lg hover:bg-blue-600">
-                    Send
-                </button>
-            </form>
-            {% else %}
-            <p class="text-red-500"><a href="{% url 'user_management:login' %}" class="underline">Log in</a> to join the chat.</p>
-            {% endif %}
+
+            <!-- Live Chat Section -->
+            <div class="w-full md:w-1/2 bg-gray-100 shadow-md rounded-lg p-6">
+                <h2 class="text-xl font-semibold mb-4">Live Chat</h2>
+                <div id="chat-messages" class="overflow-y-auto h-64 mb-4 p-2 bg-white rounded-lg shadow-inner">
+                    <!-- Chat messages will be appended here -->
+                </div>
+                {% if user.is_authenticated %}
+                <form id="chat-form">
+                    {% csrf_token %}
+                    <input id="chat-message" type="text" placeholder="Type your message..." required
+                        class="w-full px-4 py-2 border rounded-lg shadow-sm focus:ring focus:ring-blue-300 focus:outline-none">
+                    <button type="submit" class="mt-2 w-full bg-blue-500 text-white py-2 px-6 rounded-lg hover:bg-blue-600">
+                        Send
+                    </button>
+                </form>
+                {% else %}
+                <p class="text-red-500"><a href="{% url 'user_management:login' %}" class="underline">Log in</a> to join the chat.</p>
+                {% endif %}
+            </div>
         </div>
     </div>
 </div>
-
-<script>
-    // Initialize WebSocket connection
-    const auctionId = "{{ auction.id }}";
-    const socket = new WebSocket(`ws://${window.location.host}/ws/auction/${auctionId}/`);
-
-    const statusIndicator = document.querySelector('#status-indicator');
-
-    function updateStatusIndicator(color, animationClass) {
-        statusIndicator.style.width = "20px";
-        statusIndicator.style.height = "20px";
-        statusIndicator.style.margin = "0 auto";
-        statusIndicator.style.borderRadius = "50%";
-        statusIndicator.style.backgroundColor = color;
-        statusIndicator.className = animationClass;
-    }
-
-    socket.onopen = function () {
-        if ("{{ auction_status }}" === "ongoing") {
-            updateStatusIndicator('green', 'glow-green');
-        } else {
-            updateStatusIndicator('red', 'glow-red');
-        }
-    };
-
-    socket.onmessage = function (event) {
-        const data = JSON.parse(event.data);
-
-        // Handle the new bid data or error
-        if (data.error) {
-            alert(data.error);
-        } else if (data.type === 'auction_end') {
-            const auctionStatus = document.querySelector('#auction-status');
-            auctionStatus.textContent = `Auction Ended!Winner: ${data.winner || 'No winner'} with bid: Rs. ${data.winning_bid || 'N/A'}`;
-            auctionStatus.innerHTML = `Auction Ended!<br>Winner: ${data.winner || 'No winner'}<br>Winning Bid: Rs. ${data.winning_bid || 'N/A'}`;
-            auctionStatus.classList.remove("text-green-600");
-            auctionStatus.classList.add("text-red-600");
-            
-            // Set red glow button
-            updateStatusIndicator('red', 'glow-red');
-
-            // Disable the bidding form
-            const bidForm = document.querySelector('#bid-form');
-            if (bidForm) {
-                bidForm.remove(); // Disable bidding
-            }
-        } else {
-            const bidsList = document.querySelector('#bids-list');
-            const newBid = document.createElement('li');
-            const newCurrentPrice = parseFloat(data.amount).toFixed(2);
-
-            newBid.innerHTML = `<span class="font-semibold">${data.user}</span> bid <span class="text-green-600 font-bold">Rs. ${newCurrentPrice}</span> at ${data.timestamp}`;
-            bidsList.prepend(newBid); // Prepend the new bid to the list
-
-            // Remove "No bids yet" message if it exists
-            const noBidsMessage = document.querySelector('#no-bids-message');
-            if (noBidsMessage) {
-                noBidsMessage.remove();
-            }
-
-            // Update current price on the page
-            document.querySelector('#current-price').textContent = `Rs. ${newCurrentPrice}`;
-        }
-    };
-
-    socket.onclose = function () {
-        updateStatusIndicator('gray', 'WebSocket Connection Lost', '');
-    };
-
-    // Handle form submission for placing a bid
-    document.querySelector('#bid-form').addEventListener('submit', function (event) {
-        event.preventDefault(); // Prevent the default form submission
-
-        const bidAmount = document.querySelector('#bid-amount').value;
-        if (parseFloat(bidAmount) > 0) {
-            // Send the bid amount to the WebSocket server
-            socket.send(JSON.stringify({ 'amount': bidAmount }));
-            document.querySelector('#bid-amount').value = ''; // Clear the input field
-        } else {
-            alert('Please enter a valid bid amount.');
-        }
-    });
-</script>
-<script>
-    const chatSocket = new WebSocket(`ws://${window.location.host}/ws/auction/{{ auction.id }}/chat/`);
-
-    chatSocket.onmessage = function(e) {
-        const data = JSON.parse(e.data);
-        const chatMessages = document.getElementById('chat-messages');
-        const messageElement = document.createElement('div');
-        messageElement.innerHTML = `<strong>${data.username}:</strong> ${data.message}`;
-        chatMessages.appendChild(messageElement);
-
-        // Scroll to the bottom
-        chatMessages.scrollTop = chatMessages.scrollHeight;
-    };
-
-    chatSocket.onclose = function(e) {
-        console.error('Chat socket closed unexpectedly');
-    };
-
-    document.getElementById('chat-form').onsubmit = function(e) {
-        e.preventDefault();
-        const messageInput = document.getElementById('chat-message');
-        const message = messageInput.value;
-
-        chatSocket.send(JSON.stringify({
-            'message': message,
-        }));
-
-        messageInput.value = '';
-    };
-</script>
 
 <style>
     .glow-green {
@@ -220,7 +112,8 @@
         padding: 10px;
         background-color: #f9f9f9;
     }
-    
 </style>
 
+{% include 'auction/snippets/auction_functionalities.html' %}
+{% include 'auction/snippets/chat_functionalities.html' %}
 {% endblock %}
