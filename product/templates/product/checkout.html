@@ -1,5 +1,8 @@
 {% extends 'user_management/base.html' %}
 {% block title %}Checkout{% endblock %}
+{% load static %}
+{% block extra_css %}
+{% endblock %}
 
 {% block content %}
 <div class="max-w-7xl mx-auto px-4 py-8">
@@ -27,7 +30,9 @@
             <tbody class="bg-white divide-y divide-gray-200">
                 {% for item in cart_items %}
                 <tr>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{ item.product }}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                        <i class="fas fa-cube mr-2 text-gray-400"></i>{{ item.product }}
+                    </td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ item.quantity }}</td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">Rs. {{ item.price }}</td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">Rs. {{ item.total_price }}</td>
@@ -43,18 +48,20 @@
         </div>
         <div class="ml-auto">
             <a href="{% url 'product:create_order' %}"
-               class="bg-teal-500 text-white px-6 py-2 rounded hover:bg-teal-600">
-               Create Order
+               class="bg-teal-500 text-white px-6 py-2 rounded hover:bg-teal-600 flex items-center space-x-2">
+               <i class="fas fa-check-circle"></i>
+               <span>Create Order</span>
             </a>
         </div>
-    
     </div>
+
     <div class="mt-8">
         <a href="{% url 'product:user_cart' %}" 
-           class="bg-red-500 text-white px-6 py-2 rounded hover:bg-red-600">
-           Back to Cart
+           class="bg-red-500 text-white px-6 py-2 rounded hover:bg-red-600 space-x-2">
+           <i class="fas fa-arrow-left"></i>
+           <span>Back to Cart</span>
         </a>
-    </div>    
+    </div>
 
     {% else %}
     <p class="text-center text-lg font-medium text-gray-600">
