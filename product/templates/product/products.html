@@ -1,48 +1,55 @@
 {% extends 'user_management/base.html' %}
 {% block title %}Products{% endblock %}
 {% block content %}
-<div class="px-6 py-12 grid grid-cols-3 gap-4">
-    <div class="col-span-1 bg-gray-200 rounded-xl p-6 py-10">
+<div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+    <!-- Sidebar -->
+    <div class="col-span-1 bg-gray-100 rounded-xl p-6 shadow-md">
         <form method="get" action="{% url 'product:products' %}">
-            <input name="query" class="w-full py-4 px-6 border rounded-xl" type="text" value="{{ query }}"
-                placeholder="Search">
-
-            <button class="mt-2 py-4 px-8 text-lg bg-teal-500 text-white rounded-xl hover:bg-teal-400">Search</button>
+            <div class="relative">
+                <input name="query" class="w-full py-4 px-6 border rounded-xl focus:outline-none focus:ring-2 focus:ring-teal-500" type="text" value="{{ query }}" placeholder="Search">
+                <button class="absolute right-2 top-2 py-2 px-4 bg-teal-500 text-white rounded-xl hover:bg-teal-400">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M8 4a6 6 0 100 12 6 6 0 000-12zM2 8a8 8 0 1115.51 3.47l4.15 4.15a1 1 0 01-1.42 1.42l-4.15-4.15A8 8 0 012 8z" clip-rule="evenodd" />
+                    </svg>
+                </button>
+            </div>
         </form>
 
-        <hr class="my-6">
-        <p class="font-semibold">Categories</p>
-        <ul>
+        <hr class="my-6 border-gray-300">
+        <p class="font-semibold text-gray-700">Categories</p>
+        <ul class="mt-4 space-y-2">
             {% for category in categories %}
-            <li class="py-2 px-2 rounded-xl {% if category.id == category_id %} bg-blue-300 {% endif %}">
-                <a href="{% url 'product:products' %}?query={{ query }}&category={{ category.id }}">
-                    {{category.title}}
-                </a>
-            </li>
+            <a href="{% url 'product:products' %}?query={{ query }}&category={{ category.id }}" class="text-gray-700 hover:text-blue-500">
+                <li class="py-2 px-4 rounded-xl hover:bg-blue-100 {% if category.id == category_id %} bg-blue-300 {% endif %}">
+                    {{ category.title }}
+                </li>
+            </a>
             {% endfor %}
         </ul>
 
-        <hr class="my-6">
-        <p class="font-semibold">Clear Filters</p>
-        <ul>
-            <li><a href="{% url 'product:products' %}"
-                    class="mt-2 py-4 px-8 inline-block bg-yellow-500 text-lg rounded-xl text-white">Clear</a></li>
-        </ul>
+        <hr class="my-6 border-gray-300">
+        <a href="{% url 'product:products' %}" class="block py-3 px-6 text-lg text-center bg-yellow-500 text-white rounded-xl hover:bg-yellow-400">Clear Filters</a>
     </div>
 
-    <div class="col-span-2 bg-slate-400 p-3 py-10 rounded-xl">
-        <h2 class="mb-12 text-3xl text-center font-semibold">Products</h2>
-        <div class="grid grid-cols-2 gap-3">
+    <!-- Products List -->
+    <div class="col-span-3 bg-white p-6 rounded-xl shadow-md">
+        <h2 class="mb-8 text-3xl text-center font-semibold text-gray-800">Products</h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {% for product in products %}
-            <div class="m-3 opacity-90 hover:opacity-100 duration-500">
-                <a href="{% url 'product:detail_product' product.id %}">
-                    <div class="aspect-w-16 aspect-h-9">
-                        <img src="{{ product.image.url }}" alt="{{ product.title }}"
-                            class="object-cover w-full h-full rounded-t-xl">
+            <div class="bg-gray-50 rounded-xl overflow-hidden shadow hover:shadow-lg transition duration-300 hover:scale-105">
+                <a href="{% url 'product:detail_product' product.id %}" class="block">
+                    <div class="relative h-64">
+                        <img src="{{ product.image.url }}" alt="{{ product.title }}" class="object-cover w-full h-full">
+                        <div class="absolute top-2 right-2 bg-teal-500 text-white py-1 px-3 text-sm rounded-lg">
+                            -{{ product.discount_percentage }}%
+                        </div>
                     </div>
-                    <div class="p-6 bg-white rounded-b-xl hover:bg-gray-200">
-                        <h2 class="text-2xl font-bold">| {{ product.sale_price }} | {{ product.price }}</h2>
-                        <p><strong>Discount %:</strong> {{ product.discount_percentage }}</p>
+                    <div class="p-4">
+                        <h3 class="text-xl font-bold text-gray-800 truncate">{{ product.title }}</h3>
+                        <div class="mt-2 flex items-center justify-between">
+                            <p class="text-lg text-teal-500 font-semibold">${{ product.sale_price }}</p>
+                            <p class="text-sm text-gray-500 line-through">${{ product.price }}</p>
+                        </div>
                     </div>
                 </a>
             </div>

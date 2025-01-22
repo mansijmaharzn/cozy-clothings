@@ -39,7 +39,8 @@
             <tbody class="bg-white divide-y divide-gray-200">
                 {% for item in cart_items %}
                 <tr id="cart-item-{{ item.product.id }}">
-                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 flex">
+                        <img src="{{ item.product.image.url }}" alt="{{ item.product.title }}" class="w-8 h-8 object-cover rounded-sm mr-6">
                         {{ item.product.title }}
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
@@ -47,8 +48,8 @@
                             <!-- Decrease Quantity Button -->
                             <button type="button" id="quantity-minus"
                                 class="bg-red-500 text-white px-2 py-1 rounded hover:bg-red-600 text-xs"
-                                data-type="minus" data-id="{{ item.id }}">
-                                -
+                                data-type="minus" data-id="{{ item.id }}" title="Decrease quantity">
+                                <i class="fas fa-minus"></i>
                             </button>
 
                             <!-- Quantity Input -->
@@ -60,8 +61,8 @@
                             <!-- Increase Quantity Button -->
                             <button type="button" id="quantity-plus"
                                 class="bg-green-500 text-white px-2 py-1 rounded hover:bg-green-600 text-xs"
-                                data-type="plus" data-id="{{ item.id }}">
-                                +
+                                data-type="plus" data-id="{{ item.id }}" title="Increase quantity">
+                                <i class="fas fa-plus"></i>
                             </button>
                         </div>
                     </td>
@@ -73,7 +74,9 @@
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                         <button class="text-red-600 hover:text-red-800 remove-item-btn"
-                            data-product-id="{{ item.product.id }}">Remove</button>
+                            data-product-id="{{ item.product.id }}" title="Remove item">
+                            <i class="fas fa-trash-alt"></i> Remove
+                        </button>
                     </td>
                 </tr>
                 {% endfor %}
@@ -87,8 +90,9 @@
         </div>
         <div>
             <a id="checkout-btn" href="{% url 'product:checkout' %}" 
-               class="bg-blue-500 text-white px-6 py-2 rounded hover:bg-blue-600">
-               Proceed to Checkout
+               class="bg-blue-500 text-white px-6 py-2 rounded hover:bg-blue-600 flex items-center space-x-2">
+               <i class="fas fa-credit-card"></i> 
+               <span>Proceed to Checkout</span>
             </a>
         </div>
     </div>
