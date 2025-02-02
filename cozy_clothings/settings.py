@@ -128,6 +128,7 @@ USE_I18N = True
 USE_TZ = True
 
 
+# Celery Configuration
 CELERY_BROKER_URL = os.getenv("REDIS_URL")
 CELERY_RESULT_BACKEND = os.getenv("REDIS_URL")
 CELERY_ACCEPT_CONTENT = ["json"]
@@ -138,6 +139,16 @@ CELERY_TASK_TRACK_STARTED = True
 CELERY_ACKS_LATE = True
 CELERY_WORKER_SEND_TASK_EVENTS = True
 CELERY_TASK_SEND_SENT_EVENT = True
+
+
+# Email Configuration
+EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+EMAIL_HOST = os.getenv("EMAIL_HOST", "smtp.gmail.com")
+EMAIL_PORT = int(os.getenv("EMAIL_PORT", 587))
+EMAIL_USE_TLS = os.getenv("EMAIL_USE_TLS", "True") == "True"
+EMAIL_HOST_USER = os.getenv("EMAIL_HOST_USER")
+EMAIL_HOST_PASSWORD = os.getenv("EMAIL_HOST_PASSWORD")
+DEFAULT_FROM_EMAIL = os.getenv("DEFAULT_FROM_EMAIL")
 
 
 CHANNEL_LAYERS = {
@@ -216,8 +227,8 @@ JAZZMIN_UI_TWEAKS = {
     "sidebar_nav_compact_style": False,
     "sidebar_nav_legacy_style": False,
     "sidebar_nav_flat_style": False,
-    "theme": "cyborg",
-    "dark_mode_theme": None,
+    "theme": "spacelab",
+    "dark_mode_theme": "solar",
     "button_classes": {
         "primary": "btn-primary",
         "secondary": "btn-secondary",

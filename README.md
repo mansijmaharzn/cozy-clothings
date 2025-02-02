@@ -53,7 +53,7 @@ python manage.py migrate
 celery -A cozy_clothings worker --loglevel=info
 ```
 
-### 6, Run Celert Beat
+### 6. Run Celert Beat
 
 ```bash
 celery -A cozy_clothings beat --loglevel=info

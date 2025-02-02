@@ -53,6 +53,9 @@ class Product(models.Model):
     created_at = models.DateTimeField(default=now, editable=False)
     updated_at = models.DateTimeField(auto_now=True)
     is_active = models.BooleanField(default=True)
+    is_auction_product = models.BooleanField(
+        default=False, help_text="Check if this product is for auction."
+    )
 
     def __str__(self):
         return self.title
@@ -82,9 +85,21 @@ class Cart(models.Model):
         Product, on_delete=models.CASCADE, related_name="cart_items"
     )
     quantity = models.PositiveIntegerField(default=1)
+    is_auctioned = models.BooleanField(
+        default=False
+    )  # Field to mark auctioned products
 
     def total_price(self):
-        return self.product.price * self.quantity
+        if self.is_auctioned:
+            auction = (
+                self.product.auction.filter(end_time__lte=timezone.now())
+                .order_by("-end_time")
+                .first()
+            )
+            return (
+                auction.current_price if auction else 0
+            )  # Get dynamic price from auction
+        return self.product.sale_price * self.quantity
 
     class Meta:
         unique_together = (
@@ -94,7 +109,8 @@ class Cart(models.Model):
         ordering = ["-id"]
 
     def __str__(self):
-        return f"{self.quantity} {self.product.title} ({self.product.id}) - {self.user.username}"
+        status = "Auctioned" if self.is_auctioned else "Regular"
+        return f"{self.quantity} {self.product.title} ({self.product.id}) - {self.user.username} [{status}]"
 
 
 class Order(models.Model):
