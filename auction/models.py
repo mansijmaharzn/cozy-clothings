@@ -29,6 +29,12 @@ class Auction(models.Model):
     def is_active(self):
         return self.start_time <= timezone.now() <= self.end_time
 
+    def save(self, *args, **kwargs):
+        if not self.product.is_auction_product:
+            raise ValueError(f"Product {self.product.title} is not for auction.")
+
+        super().save(*args, **kwargs)
+
 
 class Bid(models.Model):
     auction = models.ForeignKey(Auction, on_delete=models.CASCADE, related_name="bids")

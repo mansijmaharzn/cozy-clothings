@@ -1,3 +1,10 @@
+import requests
+import json
+import uuid
+import hmac
+import hashlib
+import base64
+
 from django.shortcuts import render, redirect
 from django.views import View
 from django.db.models import Q
@@ -5,12 +12,7 @@ from django.shortcuts import get_object_or_404
 from django.http import JsonResponse
 from django.conf import settings
 from django.http import HttpResponseRedirect
-import requests
-import json
-import uuid
-import hmac
-import hashlib
-import base64
+from django.utils import timezone
 
 from product.models import Product, Category, Cart, Order, OrderItem, PaymentHistory
 from product.forms import PaymentForm
@@ -20,7 +22,7 @@ class ProductView(View):
     template_name = "product/products.html"
 
     def get(self, request):
-        products = Product.objects.all()
+        products = Product.objects.filter(is_active=True, is_auction_product=False)
         categories = Category.objects.all()
 
         query = request.GET.get("query", "")
@@ -34,7 +36,7 @@ class ProductView(View):
                 Q(title__icontains=query)
                 | Q(description__icontains=query)
                 | Q(category__title__icontains=query)
-            )
+            ).filter(is_active=True, is_auction_product=False)
 
         return render(
             request,
@@ -146,9 +148,10 @@ class CheckoutView(View):
         return [
             {
                 "product": item.product.title,
+                "is_auction_product": item.product.is_auction_product,
                 "quantity": item.quantity,
-                "price": item.product.price,
-                "total_price": item.product.price * item.quantity,
+                "price": item.product.sale_price,
+                "total_price": item.total_price(),
             }
             for item in user_cart_items
         ]
@@ -186,7 +189,7 @@ class CreateOrderView(View):
                 order=order,
                 product=cart_item.product,
                 quantity=cart_item.quantity,
-                price=cart_item.product.price,
+                price=cart_item.product.sale_price,
             )
 
         cart_items.delete()  # Clear the cart after creating the order
@@ -209,8 +212,23 @@ class DetailOrderView(View):
     def get(self, request, *args, **kwargs):
         order_id = kwargs.get("order_id")
         order = get_object_or_404(Order, id=order_id, user=request.user)
+        order_items = order.items.all()
 
-        return render(request, self.template_name, {"order": order})
+        # Fetch the latest ended auction for auctioned products
+        for item in order_items:
+            if item.product.is_auction_product:
+                auction = (
+                    item.product.auction.filter(end_time__lte=timezone.now())
+                    .order_by("-end_time")
+                    .first()
+                )
+                item.auction_price = (
+                    auction.current_price if auction else 0
+                )  # Attach dynamic price
+
+        return render(
+            request, self.template_name, {"order": order, "order_items": order_items}
+        )
 
 
 class PaymentView(View):
@@ -284,7 +302,20 @@ class PaymentView(View):
             if quantity > product.quantity:
                 raise ValueError(f"Insufficient stock for {product.title}")
 
-            item_total = float(product.price) * quantity
+            # Determine the correct price
+            if product.is_auction_product:
+                # Fetch the latest auction price
+                auction = (
+                    product.auction.filter(end_time__lte=timezone.now())
+                    .order_by("-end_time")
+                    .first()
+                )
+                unit_price = float(auction.current_price) if auction else 0
+            else:
+                # Use the sale price for regular products
+                unit_price = float(product.sale_price)
+
+            item_total = unit_price * quantity
             total_amount += item_total
 
             product_details.append(

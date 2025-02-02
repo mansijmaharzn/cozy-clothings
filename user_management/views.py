@@ -33,7 +33,7 @@ class IndexView(View):
     template_name = "user_management/index.html"
 
     def get(self, request):
-        products = Product.objects.all()[:4]
+        products = Product.objects.filter(is_active=True, is_auction_product=False)[:4]
         categories = Category.objects.all()
 
         return render(

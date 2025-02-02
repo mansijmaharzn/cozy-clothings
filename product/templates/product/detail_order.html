@@ -23,10 +23,12 @@
 
         {% if order.shipping_address or order.payment_method %}
         <p class="text-gray-600 mb-2">
-            <i class="fas fa-truck mr-2 text-gray-400"></i><strong>Shipping Address:</strong> {{ order.shipping_address }}
+            <i class="fas fa-truck mr-2 text-gray-400"></i><strong>Shipping Address:</strong>
+            {{ order.shipping_address }}
         </p>
         <p class="text-gray-600 mb-6">
-            <i class="fas fa-credit-card mr-2 text-gray-400"></i><strong>Payment Method:</strong> {{ order.payment_method }}
+            <i class="fas fa-credit-card mr-2 text-gray-400"></i><strong>Payment Method:</strong>
+            {{ order.payment_method }}
         </p>
         {% endif %}
 
@@ -34,16 +36,23 @@
             <i class="fas fa-cogs mr-2 text-gray-400"></i> Items in Order
         </h3>
         <ul class="divide-y divide-gray-200">
-            {% for item in order.items.all %}
+            {% for item in order_items %}
             <li class="py-4 flex justify-between">
                 <div class="flex items-center space-x-3">
-                    <img src="{{ item.product.image.url }}" alt="{{ item.product.title }}" class="w-8 h-8 object-cover rounded-sm">
+                    <img src="{{ item.product.image.url }}" alt="{{ item.product.title }}"
+                        class="w-8 h-8 object-cover rounded-sm">
                     <div>
                         <p class="text-gray-800 font-medium">{{ item.product.title }}</p>
+                        {% if not item.product.is_auction_product %}
                         <p class="text-gray-500 text-sm">Quantity: {{ item.quantity }}</p>
+                        {% endif %}
                     </div>
                 </div>
+                {% if not item.product.is_auction_product %}
                 <p class="text-black-600">Rs. {{ item.total_price }}</p>
+                {% else %}
+                <p class="text-black-600">Auctioned Product [Rs. {{ item.auction_price }}]</p>
+                {% endif %}
             </li>
             {% endfor %}
         </ul>
@@ -51,9 +60,9 @@
         {% if order.status == 'Pending' %}
         <div class="mt-6">
             <a href="{% url 'product:payment' order.id %}"
-               class="bg-teal-600 text-white px-4 py-2 rounded hover:bg-teal-700 items-center space-x-2">
-               <i class="fas fa-credit-card"></i>
-               <span>Pay Now</span>
+                class="bg-teal-600 text-white px-4 py-2 rounded hover:bg-teal-700 items-center space-x-2">
+                <i class="fas fa-credit-card"></i>
+                <span>Pay Now</span>
             </a>
         </div>
         {% endif %}
