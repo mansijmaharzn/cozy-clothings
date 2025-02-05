@@ -11,11 +11,14 @@ from django.db.models import Q
 from django.shortcuts import get_object_or_404
 from django.http import JsonResponse
 from django.conf import settings
-from django.http import HttpResponseRedirect
 from django.utils import timezone
 
 from product.models import Product, Category, Cart, Order, OrderItem, PaymentHistory
 from product.forms import PaymentForm
+from product.tasks import (
+    send_order_placement_email_task,
+    send_payment_confirmation_email_task,
+)
 
 
 class ProductView(View):
@@ -193,6 +196,12 @@ class CreateOrderView(View):
             )
 
         cart_items.delete()  # Clear the cart after creating the order
+        send_order_placement_email_task.delay(
+            user_email=request.user.email,
+            username=request.user.username,
+            order_id=order.id,
+            total_amount=order.total_price,
+        )
 
         return redirect("product:order_detail", order_id=order.id)
 
@@ -490,6 +499,15 @@ class PurchaseView(View):
             payment.transaction_status = "COMPLETE"
             payment.transaction_response = response.json()
             payment.save()
+
+        send_payment_confirmation_email_task.delay(
+            user_email=user.email,
+            username=user.username,
+            order_id=order.id,
+            total_amount=order.total_price,
+            payment_method=payments[0].transaction_type,
+            transaction_id=transaction_id,
+        )
 
     def _handle_khalti_lookup(self, pidx):
         url = settings.KHALTI_LOOKUP_URL

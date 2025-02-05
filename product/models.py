@@ -92,7 +92,7 @@ class Cart(models.Model):
     def total_price(self):
         if self.is_auctioned:
             auction = (
-                self.product.auction.filter(end_time__lte=timezone.now())
+                self.product.auction.filter(end_time__lte=now())
                 .order_by("-end_time")
                 .first()
             )
