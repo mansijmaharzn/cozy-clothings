@@ -6,7 +6,8 @@
 
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         {% for product in products %}
-        <div class="bg-white shadow-lg rounded-xl overflow-hidden hover:shadow-2xl duration-300 transform hover:scale-105 relative">
+        <div
+            class="bg-white shadow-lg rounded-xl overflow-hidden hover:shadow-2xl duration-300 transform hover:scale-105 relative">
             <a href="{% url 'product:detail_product' product.id %}">
                 <!-- Sale Badge -->
                 {% if product.discount_percentage > 0 %}
@@ -15,16 +16,15 @@
                 </span>
                 {% endif %}
                 <div class="aspect-w-16 aspect-h-9">
-                    <img src="{{ product.image.url }}" alt="{{ product.title }}"
-                        class="object-cover w-full h-full">
+                    <img src="{{ product.image.url }}" alt="{{ product.title }}" class="object-cover w-full h-full">
                 </div>
                 <div class="p-4">
                     <h3 class="text-lg font-bold text-gray-700 truncate">{{ product.title }}</h3>
                     <div class="mt-2 flex items-center">
                         <!-- Show discounted price -->
-                        <span class="text-xl font-bold text-green-500">${{ product.sale_price }}</span>
+                        <span class="text-xl font-bold text-green-500">Rs. {{ product.sale_price }}</span>
                         {% if product.discount_percentage > 0 %}
-                        <span class="ml-2 text-sm text-gray-400 line-through">${{ product.price }}</span>
+                        <span class="ml-2 text-sm text-gray-400 line-through">Rs. {{ product.price }}</span>
                         {% endif %}
                     </div>
                 </div>
@@ -39,7 +39,8 @@
 
     <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-6">
         {% for category in categories %}
-        <div class="bg-white shadow-md rounded-xl overflow-hidden hover:shadow-xl duration-300 transform hover:scale-105">
+        <div
+            class="bg-white shadow-md rounded-xl overflow-hidden hover:shadow-xl duration-300 transform hover:scale-105">
             <a href="{% url 'product:products' %}?category={{ category.id }}">
                 <div class="p-6 text-center">
                     <h3 class="text-lg font-semibold text-gray-700 truncate">{{ category.title }}</h3>
